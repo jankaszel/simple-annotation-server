@@ -24,6 +24,7 @@
     "@hapi/boom": "^9.1.0",
     "@hapi/hapi": "^19.1.1",
     "bcrypt": "^5.0.0",
+    "hapi-auth-bearer-token": "^6.1.6",
     "leveldown": "^5.6.0",
     "levelup": "^4.4.0",
     "uuid": "^8.2.0"

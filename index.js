@@ -4,68 +4,101 @@ const levelup = require('levelup')
 const leveldown = require('leveldown')
 const Hapi = require('@hapi/hapi')
 const Boom = require('@hapi/boom')
+const AuthBearer = require('hapi-auth-bearer-token')
+
+const apiToken = generateKey()
 
 function generateKey (length = 16) {
   return crypto.randomBytes(length).toString('hex')
 }
 
-const apiKey = generateKey()
+function validateToken (request, token) {
+  if (token === apiToken) {
+    return {
+      isValid: true,
+      credentials: {
+        token: apiToken,
+      },
+    }
+  } else {
+    return { isValid: false, credentials: null }
+  }
+}
+
 const db = levelup(leveldown('./data'))
-const server = Hapi.server({
-  port: process.env.PORT || 3000,
-  router: {
-    stripTrailingSlash: true,
-  },
-  routes: {
-    cors: {
-      origin: ['*'],
-      exposedHeaders: ['link', 'allow', 'etag'],
+
+async function createServer (port = 3000) {
+  const server = Hapi.server({
+    port,
+    router: {
+      stripTrailingSlash: true,
     },
-  },
-})
+    routes: {
+      cors: {
+        origin: ['*'],
+        exposedHeaders: ['link', 'allow', 'etag'],
+      },
+    },
+  })
 
-server.route({
-  method: ['POST'],
-  path: '/users/{name}',
-  handler: async (request, h) => {
-    if (request.query.token !== apiKey) {
-      return Boom.unauthorized()
-    }
+  await server.register(AuthBearer)
+  server.auth.strategy('api-token', 'bearer-access-token', {
+    allowQueryToken: true,
+    validate: validateToken,
+  })
 
-    try {
-      await db.get(request.params.name)
-      return Boom.forbidden()
-    } catch (err) {
-      const password = generateKey()
-      const user = {
-        password: await bcrypt.hash(password, 10),
+  return server
+}
+
+function createAPIRoutes (server) {
+  server.route({
+    method: ['POST'],
+    path: '/users/{name}',
+    options: {
+      auth: 'api-token',
+    },
+    handler: async (request, h) => {
+      try {
+        await db.get(request.params.name)
+        return Boom.forbidden()
+      } catch (err) {
+        const password = generateKey()
+        const user = {
+          password: await bcrypt.hash(password, 10),
+        }
+
+        db.put(request.params.name, JSON.stringify(user))
+        return { password }
       }
+    },
+  })
 
-      db.put(request.params.name, JSON.stringify(user))
-      return { password }
-    }
-  },
-})
+  server.route({
+    method: ['DELETE'],
+    path: '/users/{name}',
+    options: {
+      auth: 'api-token',
+    },
+    handler: async (request) => {
+      try {
+        await db.get(request.params.name)
+        db.del(request.params.name)
+        return 'OK'
+      } catch (err) {
+        return Boom.notFound()
+      }
+    },
+  })
+}
 
-server.route({
-  method: ['DELETE'],
-  path: '/users/{name}',
-  handler: async (request) => {
-    if (request.query.token !== apiKey) {
-      return Boom.unauthorized()
-    }
+async function main () {
+  const server = await createServer()
+  createAPIRoutes(server)
 
-    try {
-      await db.get(request.params.name)
-      db.del(request.params.name)
-      return 'OK'
-    } catch (err) {
-      return Boom.notFound()
-    }
-  },
-})
+  await server.start()
 
-server.start().then(() => {
   console.log(`Simple annotation server is running on: ${server.info.uri}
-The generated API key is: ${apiKey}`)
-})
+The generated API token is: ${apiToken}`)
+}
+
+main()
