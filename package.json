@@ -1,0 +1,30 @@
+{
+  "name": "simple-annotation-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/falafeljan/simple-annotation-server.git"
+  },
+  "keywords": [
+    "annotation",
+    "web-annotation"
+  ],
+  "author": "Jan Kaßel <jan@kassel.works>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/falafeljan/simple-annotation-server/issues"
+  },
+  "homepage": "https://github.com/falafeljan/simple-annotation-server#readme",
+  "dependencies": {
+    "@hapi/boom": "^9.1.0",
+    "@hapi/hapi": "^19.1.1",
+    "leveldown": "^5.6.0",
+    "levelup": "^4.4.0",
+    "uuid": "^8.2.0"
+  }
+}
