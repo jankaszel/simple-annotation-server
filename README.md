@@ -17,7 +17,11 @@ We'll be using `curl` to access the annotation server's JSON API. To create new 
 curl -XPOST http://localhost:3000/alice?access_token=${API_TOKEN}
 ```
 
-In its HTTP response, the server will return a new, random password for that user.
+In its HTTP response, the server will return a new, random password for that user. We can verify the creation via:
+
+```bash
+curl http://localhost:3000/alice?access_token=${API_TOKEN}
+```
 
 #### Creating Collections
 

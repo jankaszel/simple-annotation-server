@@ -3,7 +3,7 @@ const Hapi = require('@hapi/hapi')
 const AuthBasic = require('@hapi/basic')
 const AuthBearer = require('hapi-auth-bearer-token')
 const { validateToken, validateUser } = require('./auth')
-const { createUser, deleteUser } = require('./handlers/user')
+const { createUser, getUser, deleteUser } = require('./handlers/user')
 const { createCollection } = require('./handlers/collection')
 const { generateKey } = require('./util')
 
@@ -50,12 +50,9 @@ async function createServer (port = 3000) {
 async function main () {
   const server = await createServer()
 
-  addHandler(server, '/{user}', 'POST', createUser, {
-    auth: 'api-token',
-  })
-  addHandler(server, '/{user}', 'DELETE', deleteUser, {
-    auth: 'api-token',
-  })
+  addHandler(server, '/{user}', 'GET', getUser, { auth: 'api-token' })
+  addHandler(server, '/{user}', 'POST', createUser, { auth: 'api-token' })
+  addHandler(server, '/{user}', 'DELETE', deleteUser, { auth: 'api-token' })
 
   addHandler(server, '/{user}/{collection}', 'POST', createCollection)
 

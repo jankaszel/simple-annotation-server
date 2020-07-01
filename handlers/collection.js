@@ -8,6 +8,11 @@ async function createCollection (request) {
     await db.get(collectionKey)
     return Boom.badRequest()
   } catch (err) {
+    if (!err.notFound) {
+      console.error(request.method, request.path, err)
+      return Boom.internal()
+    }
+
     const collection = {
       id: uuid(),
     }
