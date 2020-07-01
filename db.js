@@ -1,6 +1,3 @@
-const levelup = require('levelup')
-const leveldown = require('leveldown')
-
-const db = levelup(leveldown('./data'))
-
+const level = require('level')
+const db = level('./data', { valueEncoding: 'json' })
 module.exports = db
