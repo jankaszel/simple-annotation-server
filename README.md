@@ -14,7 +14,7 @@ With a recent version of Node.js installed (`v12` should be sufficient), install
 We'll be using `curl` to access the annotation server's JSON API. To create new user, run the following command, specifying the API token either via GET parameters (`access_token`) or via HTTP bearer authentication:
 
 ```bash
-curl -XPOST http://localhost:3000/users/alice?access_token=${API_TOKEN}
+curl -XPOST http://localhost:3000/alice?access_token=${API_TOKEN}
 ```
 
 In its HTTP response, the server will return a new, random password for that user.
