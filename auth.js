@@ -26,8 +26,7 @@ function validateUser (opts = {}) {
       ) {
         return { isValid: false, credentials: null }
       }
-      const value = await db.get(username)
-      const user = JSON.parse(value)
+      const user = await db.get(username)
 
       if (await bcrypt.compare(password, user.password)) {
         return {

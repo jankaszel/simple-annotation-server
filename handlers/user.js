@@ -26,15 +26,14 @@ async function createUser (request) {
       password: await bcrypt.hash(password, 10),
     }
 
-    await db.put(name, JSON.stringify(user))
+    await db.put(name, user)
     return { password }
   }
 }
 
 async function getUser (request) {
   try {
-    const value = await db.get(request.params.user)
-    const user = JSON.parse(value)
+    const user = await db.get(request.params.user)
 
     delete user.password
     return {

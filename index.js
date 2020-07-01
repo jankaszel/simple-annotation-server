@@ -1,10 +1,10 @@
-const crypto = require('crypto')
 const Hapi = require('@hapi/hapi')
 const AuthBasic = require('@hapi/basic')
 const AuthBearer = require('hapi-auth-bearer-token')
 const { validateToken, validateUser } = require('./auth')
 const { createUser, getUser, deleteUser } = require('./handlers/user')
 const { createCollection } = require('./handlers/collection')
+const { createAnnotation, getAnnotation } = require('./handlers/annotation')
 const { generateKey } = require('./util')
 
 const apiToken = generateKey()
@@ -63,6 +63,8 @@ async function main () {
   })
 
   addHandler(server, '/{user}', 'POST', createCollection)
+  addHandler(server, '/{user}/{collection}', 'POST', createAnnotation)
+  addHandler(server, '/{user}/{collection}/{annotation}', 'GET', getAnnotation)
 
   await server.start()
 

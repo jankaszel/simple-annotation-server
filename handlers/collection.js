@@ -21,7 +21,7 @@ async function createCollection (request) {
       id: uuid(),
       name,
     }
-    await db.put(collectionKey, JSON.stringify(collection))
+    await db.put(collectionKey, collection)
     return collection
   }
 }
