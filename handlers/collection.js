@@ -1,37 +1,29 @@
-const { v4: uuid } = require("uuid");
-const Boom = require("@hapi/boom");
-const db = require("../db");
-const { getPrefixedEntries } = require("../util");
+const { v4: uuid } = require('uuid')
+const Boom = require('@hapi/boom')
+const db = require('../db')
 
-async function createCollection(request) {
-  const collectionKey = `${request.params.user}/${request.params.collection}`;
+async function createCollection (request) {
+  if (!request.payload || !request.payload.name) {
+    return Boom.badRequest()
+  }
+  const { name } = request.payload
+  const collectionKey = `${request.params.user}/${name}`
   try {
-    await db.get(collectionKey);
-    return Boom.badRequest();
+    await db.get(collectionKey)
+    return Boom.badRequest()
   } catch (err) {
     if (!err.notFound) {
-      console.error(request.method, request.path, err);
-      return Boom.internal();
+      console.error(request.method, request.path, err)
+      return Boom.internal()
     }
 
     const collection = {
       id: uuid(),
-    };
-    await db.put(collectionKey, JSON.stringify(collection));
-    return collection;
-  }
-}
-
-async function getCollections(request) {
-  try {
-    return await getPrefixedEntries(db, `${request.params.user}/`);
-  } catch (err) {
-    if (!err.notFound) {
-      console.error(request.method, request.path, err);
-      return Boom.internal();
+      name,
     }
-    return Boom.notFound();
+    await db.put(collectionKey, JSON.stringify(collection))
+    return collection
   }
 }
 
-module.exports = { createCollection, getCollections };
+module.exports = { createCollection }

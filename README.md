@@ -14,13 +14,16 @@ With a recent version of Node.js installed (`v12` should be sufficient), install
 We'll be using `curl` to access the annotation server's JSON API. To create new user, run the following command, specifying the API token either via GET parameters (`access_token`) or via HTTP bearer authentication:
 
 ```bash
-curl -XPOST http://localhost:3000/alice?access_token=${API_TOKEN}
+curl -XPOST \
+  -H 'content-type: application/json' \
+  --data '{"name": "alice"}' \
+  "http://localhost:3000/?access_token=${API_TOKEN}"
 ```
 
 In its HTTP response, the server will return a new, random password for that user. We can verify the creation via:
 
 ```bash
-curl http://localhost:3000/alice?access_token=${API_TOKEN}
+curl --user alice:${PASSWORD} http://localhost:3000/alice
 ```
 
 #### Creating Collections
@@ -30,7 +33,17 @@ With the newly created user and the assigned password, we'll create a new annota
 To create such a collection named ‘Notes’ for Alice, run the following command:
 
 ```bash
-curl -XPOST --user alice:${PASSWORD} http://localhost:3000/alice/notes
+curl -XPOST \
+  --user alice:${PASSWORD} \
+  -H 'content-type: application/json' \
+  --data '{"name": "notes"}' \
+  http://localhost:3000/alice
+```
+
+The newly created collection will then be available under her profile:
+
+```bash
+curl --user alice:${PASSWORD} http://localhost:3000/alice
 ```
 
 More TBD.

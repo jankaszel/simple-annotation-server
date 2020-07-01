@@ -2,11 +2,16 @@ const bcrypt = require('bcrypt')
 const { v4: uuid } = require('uuid')
 const Boom = require('@hapi/boom')
 const db = require('../db')
-const { generateKey } = require('../util')
+const { generateKey, getPrefixedEntries } = require('../util')
 
 async function createUser (request) {
+  if (!request.payload || !request.payload.name) {
+    return Boom.badRequest()
+  }
+  const { name } = request.payload
+
   try {
-    await db.get(request.params.user)
+    await db.get(name)
     return Boom.badRequest()
   } catch (err) {
     if (!err.notFound) {
@@ -17,11 +22,11 @@ async function createUser (request) {
     const password = generateKey()
     const user = {
       id: uuid(),
-      name: request.params.user,
+      name,
       password: await bcrypt.hash(password, 10),
     }
 
-    db.put(request.params.user, JSON.stringify(user))
+    await db.put(name, JSON.stringify(user))
     return { password }
   }
 }
@@ -32,7 +37,10 @@ async function getUser (request) {
     const user = JSON.parse(value)
 
     delete user.password
-    return user
+    return {
+      ...user,
+      collections: await getPrefixedEntries(db, `${request.params.user}/`),
+    }
   } catch (err) {
     if (!err.notFound) {
       console.error(request.method, request.path, err)

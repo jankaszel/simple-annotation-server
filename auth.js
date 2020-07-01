@@ -16,23 +16,32 @@ function validateToken (apiToken) {
   }
 }
 
-async function validateUser (request, username, password) {
-  try {
-    const value = await db.get(username)
-    const user = JSON.parse(value)
-
-    if (await bcrypt.compare(password, user.password)) {
-      return {
-        isValid: true,
-        credentials: {
-          name: username,
-        },
+function validateUser (opts = {}) {
+  const userParam = opts.userParam || 'user'
+  return async (request, username, password) => {
+    try {
+      if (
+        !request.params[userParam] ||
+        request.params[userParam] !== username
+      ) {
+        return { isValid: false, credentials: null }
       }
-    } else {
+      const value = await db.get(username)
+      const user = JSON.parse(value)
+
+      if (await bcrypt.compare(password, user.password)) {
+        return {
+          isValid: true,
+          credentials: {
+            name: username,
+          },
+        }
+      } else {
+        return { isValid: false, credentials: null }
+      }
+    } catch (err) {
       return { isValid: false, credentials: null }
     }
-  } catch (err) {
-    return { isValid: false, credentials: null }
   }
 }
 
