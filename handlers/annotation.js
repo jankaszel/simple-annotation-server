@@ -72,4 +72,30 @@ async function getAnnotation (request, h) {
   }
 }
 
-module.exports = { createAnnotation, getAnnotation }
+async function deleteAnnotation (request, h) {
+  const collectionKey = `${request.params.user}/${request.params.collection}`
+  try {
+    await db.get(collectionKey)
+  } catch (err) {
+    if (!err.notFound) {
+      console.error(request.method, request.path, err)
+      return Boom.internal()
+    }
+    return Boom.notFound()
+  }
+
+  const annotationKey = `${collectionKey}/${request.params.annotation}`
+  try {
+    await db.get(annotationKey)
+    await db.del(annotationKey)
+    return h.response().code(204)
+  } catch (err) {
+    if (!err.notFound) {
+      console.error(request.method, request.path, err)
+      return Boom.internal()
+    }
+    return Boom.notFound()
+  }
+}
+
+module.exports = { createAnnotation, getAnnotation, deleteAnnotation }

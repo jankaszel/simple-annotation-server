@@ -4,7 +4,7 @@ const AuthBearer = require('hapi-auth-bearer-token')
 const { validateToken, validateUser } = require('./auth')
 const { createUser, getUser, deleteUser } = require('./handlers/user')
 const { createCollection, getCollection } = require('./handlers/collection')
-const { createAnnotation, getAnnotation } = require('./handlers/annotation')
+const { createAnnotation, getAnnotation, deleteAnnotation } = require('./handlers/annotation')
 const { generateKey } = require('./util')
 const { port } = require('./args')
 
@@ -67,6 +67,7 @@ async function main () {
   addHandler(server, '/{user}/{collection}', 'POST', createAnnotation)
   addHandler(server, '/{user}/{collection}', 'GET', getCollection)
   addHandler(server, '/{user}/{collection}/{annotation}', 'GET', getAnnotation)
+  addHandler(server, '/{user}/{collection}/{annotation}', 'DELETE', deleteAnnotation)
 
   await server.start()
 
