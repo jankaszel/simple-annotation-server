@@ -14,7 +14,7 @@ function getPrefixedEntries (db, prefix) {
         stream.destroy()
         return
       }
-      entries.push(entry.value)
+      entries.push(entry)
     })
     stream.on('error', (err) => reject(err))
     stream.on('close', () => resolve(entries))

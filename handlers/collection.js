@@ -56,7 +56,9 @@ async function getCollection (request, h) {
   const containerInfo = new Container(collectionKey)
 
   try {
-    const annotations = await getPrefixedEntries(db, `${collectionKey}/`)
+    const annotations = (await getPrefixedEntries(db, `${collectionKey}/`)).map(
+      (entry) => entry.value
+    )
     const collection = new PagedContainer(
       collectionKey,
       annotations.map((annotation) =>
@@ -79,4 +81,25 @@ async function getCollection (request, h) {
   }
 }
 
-module.exports = { createCollection, getCollection }
+async function deleteCollection (request, h) {
+  const collectionKey = `${request.params.user}/${request.params.collection}`
+  try {
+    await db.get(collectionKey)
+
+    const entries = await getPrefixedEntries(db, `${collectionKey}/`)
+    for (const { key } of entries) {
+      await db.del(key)
+    }
+
+    await db.del(collectionKey)
+    return h.response().code(204)
+  } catch (err) {
+    if (!err.notFound) {
+      console.error(request.method, request.path, err)
+      return Boom.internal()
+    }
+    return Boom.notFound()
+  }
+}
+
+module.exports = { createCollection, getCollection, deleteCollection }

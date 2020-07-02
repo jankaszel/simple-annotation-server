@@ -34,10 +34,14 @@ async function createUser (request, h) {
 async function getUser (request) {
   try {
     const user = await db.get(request.params.user)
+    const collections = (
+      await getPrefixedEntries(db, `${request.params.user}/`)
+    ).map((entry) => entry.value)
+
     delete user.password
     return {
       ...user,
-      collections: await getPrefixedEntries(db, `${request.params.user}/`),
+      collections,
     }
   } catch (err) {
     if (!err.notFound) {
