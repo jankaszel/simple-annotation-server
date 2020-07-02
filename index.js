@@ -3,9 +3,10 @@ const AuthBasic = require('@hapi/basic')
 const AuthBearer = require('hapi-auth-bearer-token')
 const { validateToken, validateUser } = require('./auth')
 const { createUser, getUser, deleteUser } = require('./handlers/user')
-const { createCollection } = require('./handlers/collection')
+const { createCollection, getCollection } = require('./handlers/collection')
 const { createAnnotation, getAnnotation } = require('./handlers/annotation')
 const { generateKey } = require('./util')
+const { port } = require('./args')
 
 const apiToken = generateKey()
 
@@ -18,7 +19,7 @@ function addHandler (server, path, method, handler, options = {}) {
   })
 }
 
-async function createServer (port = 3000) {
+async function createServer (port) {
   const server = Hapi.server({
     port,
     router: {
@@ -48,7 +49,7 @@ async function createServer (port = 3000) {
 }
 
 async function main () {
-  const server = await createServer()
+  const server = await createServer(port)
 
   addHandler(server, '/', 'POST', createUser, { auth: 'api-token' })
   addHandler(server, '/{user}', 'GET', getUser, {
@@ -64,6 +65,7 @@ async function main () {
 
   addHandler(server, '/{user}', 'POST', createCollection)
   addHandler(server, '/{user}/{collection}', 'POST', createAnnotation)
+  addHandler(server, '/{user}/{collection}', 'GET', getCollection)
   addHandler(server, '/{user}/{collection}/{annotation}', 'GET', getAnnotation)
 
   await server.start()

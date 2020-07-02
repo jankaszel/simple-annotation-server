@@ -1,6 +1,7 @@
 const { v4: uuid } = require('uuid')
 const Boom = require('@hapi/boom')
 const db = require('../db')
+const { Container, wrapResource, expandAnnotation } = require('../ldp')
 
 async function createAnnotation (request, h) {
   const collectionKey = `${request.params.user}/${request.params.collection}`
@@ -36,7 +37,7 @@ async function createAnnotation (request, h) {
   }
 }
 
-async function getAnnotation (request) {
+async function getAnnotation (request, h) {
   const collectionKey = `${request.params.user}/${request.params.collection}`
   try {
     await db.get(collectionKey)
@@ -50,7 +51,9 @@ async function getAnnotation (request) {
 
   const annotationKey = `${collectionKey}/${request.params.annotation}`
   try {
-    return await db.get(annotationKey)
+    const annotation = await db.get(annotationKey)
+    const containerInfo = new Container(collectionKey)
+    return wrapResource(h, expandAnnotation(annotation, containerInfo))
   } catch (err) {
     if (!err.notFound) {
       console.error(request.method, request.path, err)
