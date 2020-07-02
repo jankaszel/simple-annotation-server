@@ -4,7 +4,7 @@ const Boom = require('@hapi/boom')
 const db = require('../db')
 const { generateKey, getPrefixedEntries } = require('../util')
 
-async function createUser (request) {
+async function createUser (request, h) {
   if (!request.payload || !request.payload.name) {
     return Boom.badRequest()
   }
@@ -27,14 +27,13 @@ async function createUser (request) {
     }
 
     await db.put(name, user)
-    return { password }
+    return h.response({ user }).code(201).header('location', `/${name}`)
   }
 }
 
 async function getUser (request) {
   try {
     const user = await db.get(request.params.user)
-
     delete user.password
     return {
       ...user,
@@ -49,11 +48,11 @@ async function getUser (request) {
   }
 }
 
-async function deleteUser (request) {
+async function deleteUser (request, h) {
   try {
     await db.get(request.params.user)
-    db.del(request.params.user)
-    return 'OK'
+    await db.del(request.params.user)
+    return h.response().code(204)
   } catch (err) {
     if (!err.notFound) {
       console.error(request.method, request.path, err)

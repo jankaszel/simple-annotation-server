@@ -10,7 +10,7 @@ const {
 } = require('../ldp')
 const { getPrefixedEntries } = require('../util')
 
-async function createCollection (request) {
+async function createCollection (request, h) {
   if (!request.payload || !request.payload.name) {
     return Boom.badRequest()
   }
@@ -30,7 +30,10 @@ async function createCollection (request) {
       name,
     }
     await db.put(collectionKey, collection)
-    return collection
+    return h
+      .response(collection)
+      .code(201)
+      .header('location', `/${collectionKey}`)
   }
 }
 

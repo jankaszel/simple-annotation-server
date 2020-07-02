@@ -33,7 +33,16 @@ async function createAnnotation (request, h) {
     }
 
     await db.put(annotationKey, annotation)
-    return h.redirect(`/${annotationKey}`)
+
+    const containerInfo = new Container(collectionKey)
+    const resource = wrapResource(
+      h,
+      expandAnnotation(annotation, containerInfo)
+    )
+    return h
+      .response(resource)
+      .code(201)
+      .header('location', `/${annotationKey}`)
   }
 }
 
