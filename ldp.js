@@ -1,11 +1,26 @@
+const escapeString = require('escape-string-regexp')
 const Boom = require('@hapi/boom')
 const etag = require('etag')
 const { host, ssl } = require('./args')
+
+function extractId (annotationId, containerUrl) {
+  const escapedUrl = escapeString(containerUrl)
+  const pattern = new RegExp(`^${escapedUrl}\/([0-9a-z-]+)$`)
+  const matches = annotationId.match(pattern)
+  return !matches ? null : matches[1]
+}
 
 function expandAnnotation (annotation, containerInfo) {
   return {
     ...annotation,
     id: `${containerInfo.url}/${annotation.id}`,
+  }
+}
+
+function contractAnnotation (annotation, containerInfo) {
+  return {
+    ...annotation,
+    id: extractId(annotation.id, containerInfo.url),
   }
 }
 
@@ -128,4 +143,6 @@ module.exports = {
   createContainer,
   wrapResource,
   expandAnnotation,
+  contractAnnotation,
+  extractId,
 }

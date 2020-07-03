@@ -11,6 +11,7 @@ const {
 const {
   createAnnotation,
   getAnnotation,
+  updateAnnotation,
   deleteAnnotation,
 } = require('./handlers/annotation')
 const { generateKey } = require('./util')
@@ -76,6 +77,12 @@ async function main () {
   addHandler(server, '/{user}/{collection}', 'GET', getCollection)
   addHandler(server, '/{user}/{collection}', 'DELETE', deleteCollection)
   addHandler(server, '/{user}/{collection}/{annotation}', 'GET', getAnnotation)
+  addHandler(
+    server,
+    '/{user}/{collection}/{annotation}',
+    'PUT',
+    updateAnnotation
+  )
   addHandler(
     server,
     '/{user}/{collection}/{annotation}',

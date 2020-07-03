@@ -1,7 +1,12 @@
 const { v4: uuid } = require('uuid')
 const Boom = require('@hapi/boom')
 const db = require('../db')
-const { Container, wrapResource, expandAnnotation } = require('../ldp')
+const {
+  Container,
+  wrapResource,
+  expandAnnotation,
+  extractId,
+} = require('../ldp')
 
 async function createAnnotation (request, h) {
   const collectionKey = `${request.params.user}/${request.params.collection}`
@@ -35,14 +40,11 @@ async function createAnnotation (request, h) {
     await db.put(annotationKey, annotation)
 
     const containerInfo = new Container(collectionKey)
-    const resource = wrapResource(
+    const response = wrapResource(
       h,
       expandAnnotation(annotation, containerInfo)
     )
-    return h
-      .response(resource)
-      .code(201)
-      .header('location', `/${annotationKey}`)
+    return response.code(201).header('location', `/${annotationKey}`)
   }
 }
 
@@ -63,6 +65,55 @@ async function getAnnotation (request, h) {
     const annotation = await db.get(annotationKey)
     const containerInfo = new Container(collectionKey)
     return wrapResource(h, expandAnnotation(annotation, containerInfo))
+  } catch (err) {
+    if (!err.notFound) {
+      console.error(request.method, request.path, err)
+      return Boom.internal()
+    }
+    return Boom.notFound()
+  }
+}
+
+async function updateAnnotation (request, h) {
+  const collectionKey = `${request.params.user}/${request.params.collection}`
+  try {
+    await db.get(collectionKey)
+  } catch (err) {
+    if (!err.notFound) {
+      console.error(request.method, request.path, err)
+      return Boom.internal()
+    }
+    return Boom.notFound()
+  }
+
+  const annotation = request.payload
+  if (!annotation || !annotation.id) {
+    return Boom.badRequest(
+      'Payload did not match the Web Annotation JSON-LD schema'
+    )
+  }
+
+  const containerInfo = new Container(collectionKey)
+  const normalizedId = extractId(annotation.id, containerInfo.url)
+  if (!normalizedId) {
+    return Boom.badRequest(
+      `Annotation ID did not match the expected container IRI: ${containerInfo.url}`
+    )
+  }
+  const contractedAnnotation = {
+    ...annotation,
+    id: normalizedId,
+  }
+  const annotationKey = `${collectionKey}/${contractedAnnotation.id}`
+  try {
+    await db.get(annotationKey)
+    await db.put(annotationKey, contractedAnnotation)
+
+    const containerInfo = new Container(collectionKey)
+    return wrapResource(
+      h,
+      expandAnnotation(contractedAnnotation, containerInfo)
+    )
   } catch (err) {
     if (!err.notFound) {
       console.error(request.method, request.path, err)
@@ -98,4 +149,9 @@ async function deleteAnnotation (request, h) {
   }
 }
 
-module.exports = { createAnnotation, getAnnotation, deleteAnnotation }
+module.exports = {
+  createAnnotation,
+  getAnnotation,
+  updateAnnotation,
+  deleteAnnotation,
+}

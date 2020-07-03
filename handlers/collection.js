@@ -14,6 +14,7 @@ async function createCollection (request, h) {
   if (!request.payload || !request.payload.name) {
     return Boom.badRequest()
   }
+
   const { name } = request.payload
   const collectionKey = `${request.params.user}/${name}`
   try {
