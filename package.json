@@ -29,6 +29,7 @@
     "etag": "^1.8.1",
     "hapi-auth-bearer-token": "^6.1.6",
     "level": "^6.0.1",
+    "minimist": "^1.2.5",
     "uuid": "^8.2.0"
   },
   "devDependencies": {

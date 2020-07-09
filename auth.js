@@ -1,6 +1,23 @@
 const bcrypt = require('bcrypt')
 const db = require('./db')
 
+const createAuthDummy = (schemeName) => {
+  const authDummy = {
+    name: `DummyAuthentication-${schemeName}`,
+    register (server, options) {
+      server.auth.scheme(schemeName, (server, strategyOptions) => ({
+        authenticate (request, h) {
+          return h.authenticated({ credentials: { foo: 'bar' } })
+        },
+      }))
+    },
+  }
+  authDummy.register.attributes = {
+    name: 'hapi-auth-dummy',
+  }
+  return authDummy
+}
+
 function validateToken (apiToken) {
   return (request, token) => {
     if (token === apiToken) {
@@ -44,4 +61,8 @@ function validateUser (opts = {}) {
   }
 }
 
-module.exports = { validateToken, validateUser }
+module.exports = {
+  createAuthDummy,
+  validateToken,
+  validateUser,
+}
