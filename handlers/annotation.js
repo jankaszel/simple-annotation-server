@@ -1,5 +1,6 @@
 const { v4: uuid } = require('uuid')
 const Boom = require('@hapi/boom')
+const validateAnnotation = require('validate-web-annotation')
 const db = require('../db')
 const {
   Container,
@@ -20,12 +21,16 @@ async function createAnnotation (request, h) {
     return Boom.notFound()
   }
   if (!request.payload) {
-    return Boom.badRequest()
+    return Boom.badRequest('Missing request body')
+  }
+
+  const annotation = request.payload
+  if (!validateAnnotation(annotation, { optionalId: true })) {
+    return Boom.badRequest('Invalid body schema')
   }
 
   const id = uuid()
   const annotationKey = `${collectionKey}/${id}`
-  const annotation = request.payload
   annotation.id = id
 
   try {
@@ -87,10 +92,8 @@ async function updateAnnotation (request, h) {
   }
 
   const annotation = request.payload
-  if (!annotation || !annotation.id) {
-    return Boom.badRequest(
-      'Payload did not match the Web Annotation JSON-LD schema'
-    )
+  if (!annotation || !validateAnnotation(annotation)) {
+    return Boom.badRequest('Invalid body schema')
   }
 
   const containerInfo = new Container(collectionKey)
