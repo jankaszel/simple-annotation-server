@@ -2,9 +2,12 @@
   "name": "simple-annotation-server",
   "version": "0.1.0",
   "description": "Simple HTTP server implementing the Web Annotation specification",
-  "main": "index.js",
   "scripts": {
+    "start": "./bin/server.js",
     "test": "tape test/*.js"
+  },
+  "bin": {
+    "simple-annotation-server": "./bin/server.js"
   },
   "repository": {
     "type": "git",
@@ -31,7 +34,7 @@
     "level": "^6.0.1",
     "minimist": "^1.2.5",
     "uuid": "^8.2.0",
-    "validate-web-annotation": "^0.2.0"
+    "validate-web-annotation": "^0.3.0"
   },
   "devDependencies": {
     "tape": "^5.0.1"

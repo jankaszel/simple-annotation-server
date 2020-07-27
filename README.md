@@ -7,7 +7,7 @@ The server is in active development and its API is subject to frequent change.
 
 ### Usage
 
-With a recent version of Node.js installed (`v12` should be sufficient), install all dependencies via `npm install`. Then, start the annotation server via `node index.js`—3000 will be its default port. With each start, the annotation server will generate a new, random API token which will be reported in its terminal output during startup.
+With a recent version of Node.js installed (`v12` should be sufficient), install all dependencies via `npm install`. Then, start the annotation server via `./bin/server.js index.js`—3000 will be its default port. With each start, the annotation server will generate a new, random API token which will be reported in its terminal output during startup.
 
 #### Creating Users
 

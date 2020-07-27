@@ -1,23 +1,19 @@
-const Hapi = require('@hapi/hapi')
-const AuthBasic = require('@hapi/basic')
-const AuthBearer = require('hapi-auth-bearer-token')
-const { createAuthDummy, validateToken, validateUser } = require('./auth')
-const { createUser, getUser, deleteUser } = require('./handlers/user')
+#!/usr/bin/env node
+const { createServer } = require('../server')
+const { createUser, getUser, deleteUser } = require('../handlers/user')
 const {
   createCollection,
   getCollection,
   deleteCollection,
-} = require('./handlers/collection')
+} = require('../handlers/collection')
 const {
   createAnnotation,
   getAnnotation,
   updateAnnotation,
   deleteAnnotation,
-} = require('./handlers/annotation')
-const { generateKey } = require('./util')
-const args = require('./args')
-
-const apiToken = generateKey()
+} = require('../handlers/annotation')
+const { generateKey } = require('../util')
+const args = require('../args')
 
 function addHandler (server, path, method, handler, options = {}) {
   server.route({
@@ -28,42 +24,20 @@ function addHandler (server, path, method, handler, options = {}) {
   })
 }
 
-async function createServer (opts = {}) {
-  const port = opts.port || 3000,
-    open = !!opts.open || false
-
-  const server = Hapi.server({
-    port,
-    router: {
-      stripTrailingSlash: true,
-    },
-    routes: {
-      cors: {
-        origin: ['*'],
-        exposedHeaders: ['link', 'allow', 'etag'],
-      },
-    },
-  })
-
-  await server.register(open ? createAuthDummy('basic') : AuthBasic)
-  server.auth.strategy('user', 'basic', {
-    validate: validateUser({ userParam: 'user' }),
-  })
-  server.auth.default('user')
-
-  await server.register(
-    open ? createAuthDummy('bearer-access-token') : AuthBearer
-  )
-  server.auth.strategy('api-token', 'bearer-access-token', {
-    allowQueryToken: true,
-    validate: validateToken(apiToken),
-  })
-
-  return server
-}
-
 async function main () {
-  const server = await createServer(args)
+  if (args.help) {
+    console.log(`Usage: $ simple-annotation-server
+  
+Options:
+ -p --port PORT  TCP port to serve on (defaults to 3000)
+ --host HOST     Full public host (e.g., www.example.com:5000)
+ -s --ssl        Runs behind an SSL proxy
+ -x              Don't require any authentication`)
+    process.exit(0)
+  }
+
+  const apiToken = generateKey()
+  const server = await createServer({ ...args, apiToken })
 
   addHandler(server, '/', 'POST', createUser, { auth: 'api-token' })
   addHandler(server, '/{user}', 'GET', getUser, {
