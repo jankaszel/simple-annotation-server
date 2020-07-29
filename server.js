@@ -17,6 +17,7 @@ async function createServer (opts = {}) {
     routes: {
       cors: {
         origin: ['*'],
+        credentials: true,
         exposedHeaders: ['link', 'allow', 'etag'],
       },
     },
