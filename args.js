@@ -2,7 +2,7 @@ const os = require('os')
 const parseArgs = require('minimist')
 
 const args = parseArgs(process.argv.slice(2), {
-  boolean: ['x', 'ssl', 'help'],
+  boolean: ['x', 'ssl', 'help', 'cors'],
   string: ['port', 'host'],
   alias: {
     help: 'h',
@@ -10,6 +10,7 @@ const args = parseArgs(process.argv.slice(2), {
     ssl: 's',
   },
   default: {
+    cors: false,
     host: undefined,
     port: 3000,
     ssl: false,
@@ -26,6 +27,7 @@ if (!Number.isInteger(port)) {
 const host = args.host || `${os.hostname()}:${port}`
 
 module.exports = {
+  cors: args.cors,
   host,
   port,
   open: args.x,

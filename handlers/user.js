@@ -27,7 +27,10 @@ async function createUser (request, h) {
     }
 
     await db.put(name, user)
-    return h.response({ user }).code(201).header('location', `/${name}`)
+    return h
+      .response({ ...user, password })
+      .code(201)
+      .header('location', `/${name}`)
   }
 }
 
